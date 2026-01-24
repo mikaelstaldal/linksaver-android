@@ -3,9 +3,11 @@ package nu.staldal.linksaver.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -22,6 +24,7 @@ fun EditLinkScreen(
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val clipboardManager = LocalClipboardManager.current
 
     var url by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
@@ -71,7 +74,16 @@ fun EditLinkScreen(
                 onValueChange = { url = it },
                 label = { Text(stringResource(R.string.url)) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isEdit // URL cannot be edited according to API description (only PATCH {id} for title)
+                enabled = !isEdit, // URL cannot be edited according to API description (only PATCH {id} for title)
+                trailingIcon = {
+                    if (!isEdit) {
+                        IconButton(onClick = {
+                            clipboardManager.getText()?.let { url = it.text }
+                        }) {
+                            Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
+                        }
+                    }
+                }
             )
             OutlinedTextField(
                 value = title,
