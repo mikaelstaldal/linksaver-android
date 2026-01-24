@@ -1,24 +1,20 @@
 package nu.staldal.linksaver
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import nu.staldal.linksaver.ui.theme.LinksaverTheme
 import nu.staldal.linksaver.data.LinkRepository
-import androidx.compose.ui.platform.LocalContext
-
-import nu.staldal.linksaver.ui.*
+import nu.staldal.linksaver.ui.EditLinkScreen
+import nu.staldal.linksaver.ui.LinkListScreen
+import nu.staldal.linksaver.ui.SettingsScreen
+import nu.staldal.linksaver.ui.theme.LinksaverTheme
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +24,11 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val context = LocalContext.current
                 val repository = remember { LinkRepository(context) }
+
+                val onOpenLink: (String) -> Unit = { url ->
+                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                    context.startActivity(intent)
+                }
                 
                 NavHost(navController = navController, startDestination = "list") {
                     composable("list") {
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
                             repository = repository,
                             onAddLink = { navController.navigate("add") },
                             onEditLink = { id -> navController.navigate("edit/$id") },
+                            onOpenLink = onOpenLink,
                             onSettings = { navController.navigate("settings") }
                         )
                     }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,7 @@ fun LinkListScreen(
     repository: LinkRepository,
     onAddLink: () -> Unit,
     onEditLink: (String) -> Unit,
+    onOpenLink: (String) -> Unit,
     onSettings: () -> Unit
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
@@ -81,7 +83,8 @@ fun LinkListScreen(
                 items(links) { link ->
                     LinkItem(
                         link = link,
-                        onClick = { onEditLink(link.ID) },
+                        onClick = { onOpenLink(link.URL) },
+                        onEdit = { onEditLink(link.ID) },
                         onDelete = {
                             scope.launch {
                                 val api = repository.getApi(settings)
@@ -106,6 +109,7 @@ fun LinkListScreen(
 fun LinkItem(
     link: Link,
     onClick: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
@@ -118,17 +122,25 @@ fun LinkItem(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = link.Title, style = MaterialTheme.typography.titleMedium)
                 Text(text = link.URL, style = MaterialTheme.typography.bodySmall)
-                link.Description?.let {
-                    Text(text = it, style = MaterialTheme.typography.bodyMedium)
+                link.Description.let {
+                    if (it.isNotBlank()) {
+                        Text(text = it, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            Row {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
+                }
             }
         }
     }
