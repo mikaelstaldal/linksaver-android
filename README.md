@@ -1,10 +1,11 @@
 # Link Saver Android
 
-A native Android client for Link Saver, built with Kotlin and Jetpack Compose.
+A native Android client for [Link Saver](https://github.com/mikaelstaldal/linksaver), built with Kotlin and Jetpack Compose.
 
 ## Overview
 
-Link Saver Android allows you to manage your saved links on the go. It connects to a LinkSaver API to fetch, add, edit, and delete links.
+Link Saver Android allows you to manage your saved links on the go (although it's not written in Go). 
+It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, and delete links.
 
 ## Features
 
@@ -20,7 +21,7 @@ Link Saver Android allows you to manage your saved links on the go. It connects 
 
 - Android device or emulator running Android 7.0 (API level 24) or higher.
 - Java Development Kit (JDK) 21.
-- Android Studio Ladybug | 2024.2.1 or newer (recommended).
+- Android Studio Ladybug | 2024.2.1 or newer (recommended), or IntelliJ IDEA with Android plugin and Android SDK.
 
 ## Setup & Run
 
