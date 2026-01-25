@@ -18,4 +18,7 @@
     <string name="cancel">Cancel</string>
     <string name="confirm_delete">Are you sure you want to delete this link?</string>
     <string name="paste">Paste</string>
+    <string name="link_saved">Link saved</string>
+    <string name="error_saving_link">Error saving link: %s</string>
+    <string name="settings_not_configured">Settings not configured</string>
 </resources>

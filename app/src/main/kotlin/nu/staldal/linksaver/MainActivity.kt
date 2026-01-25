@@ -15,6 +15,10 @@ import nu.staldal.linksaver.ui.LinkListScreen
 import nu.staldal.linksaver.ui.SettingsScreen
 import nu.staldal.linksaver.ui.theme.LinksaverTheme
 import androidx.core.net.toUri
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +47,23 @@ class MainActivity : ComponentActivity() {
                     composable("settings") {
                         SettingsScreen(
                             repository = repository,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    composable(
+                        route = "add?url={url}",
+                        arguments = listOf(navArgument("url") {
+                            type = NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        })
+                    ) { backStackEntry ->
+                        val initialUrl = backStackEntry.arguments?.getString("url")?.let {
+                            URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                        }
+                        EditLinkScreen(
+                            repository = repository,
+                            linkId = null,
                             onBack = { navController.popBackStack() }
                         )
                     }

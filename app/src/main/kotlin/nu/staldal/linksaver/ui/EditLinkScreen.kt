@@ -118,6 +118,9 @@ fun EditLinkScreen(
                             } finally {
                                 isLoading = false
                             }
+                        } else {
+                            isLoading = false
+                            snackbarHostState.showSnackbar("Settings not configured")
                         }
                     }
                 },
