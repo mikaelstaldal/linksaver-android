@@ -1,5 +1,6 @@
 package nu.staldal.linksaver.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -67,6 +68,7 @@ fun EditLinkScreen(
                     title = link.Title
                     description = link.Description
                 } catch (e: Exception) {
+                    Log.w("EditLinkScreen", "Error fetching link: ${e.message}", e)
                     snackbarHostState.showSnackbar("Error fetching link: ${e.message}")
                 }
             }
@@ -138,6 +140,7 @@ fun EditLinkScreen(
                                 }
                                 onBack()
                             } catch (e: Exception) {
+                                Log.w("EditLinkScreen", "Error fetching link: ${e.message}", e)
                                 snackbarHostState.showSnackbar("Error saving link: ${e.message}")
                             } finally {
                                 isLoading = false

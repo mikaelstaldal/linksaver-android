@@ -3,6 +3,7 @@ package nu.staldal.linksaver
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -41,6 +42,7 @@ class ShareActivity : Activity() {
                     Toast.makeText(this@ShareActivity, R.string.settings_not_configured, Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
+                Log.w("ShareActivity", getString(R.string.error_saving_link, e.message), e)
                 Toast.makeText(
                     this@ShareActivity,
                     getString(R.string.error_saving_link, e.message),

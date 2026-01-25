@@ -1,5 +1,6 @@
 package nu.staldal.linksaver.ui
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,6 +65,7 @@ fun LinkListScreen(
                 try {
                     links = api.getLinks(searchTerm.takeIf { it.isNotBlank() })
                 } catch (e: Exception) {
+                    Log.w("ListLinkScreen", "Error fetching links: ${e.message}", e)
                     snackbarHostState.showSnackbar("Error fetching links: ${e.message}")
                 }
             }
@@ -115,6 +117,7 @@ fun LinkListScreen(
                                         api.deleteLink(link.ID)
                                         refreshLinks()
                                     } catch (e: Exception) {
+                                        Log.w("ListLinkScreen", "Error deleting link: ${e.message}", e)
                                         snackbarHostState.showSnackbar("Error deleting link: ${e.message}")
                                     }
                                 }

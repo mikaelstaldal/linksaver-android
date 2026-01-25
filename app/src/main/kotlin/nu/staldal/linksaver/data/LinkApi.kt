@@ -16,21 +16,24 @@ interface LinkApi {
     suspend fun getLinks(@Query("s") searchTerm: String? = null): List<Link>
 
     @POST("./")
+    @Headers("Accept: application/json")
     @FormUrlEncoded
-    suspend fun addLink(@Field("url") url: String): Link
+    suspend fun addLink(@Field("url") url: String): List<Link>
 
     @POST("./")
+    @Headers("Accept: application/json")
     @FormUrlEncoded
     suspend fun addNote(
         @Field("note-title") title: String,
         @Field("note-text") text: String,
-    ): Link
+    ): List<Link>
 
     @GET("{id}")
     @Headers("Accept: application/json")
     suspend fun getLink(@Path("id") id: String): Link
 
     @PATCH("{id}")
+    @Headers("Accept: application/json")
     @FormUrlEncoded
     suspend fun updateLink(
         @Path("id") id: String,
