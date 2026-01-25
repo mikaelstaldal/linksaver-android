@@ -6,17 +6,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import nu.staldal.linksaver.data.LinkRepository
 import nu.staldal.linksaver.ui.EditLinkScreen
 import nu.staldal.linksaver.ui.LinkListScreen
 import nu.staldal.linksaver.ui.SettingsScreen
 import nu.staldal.linksaver.ui.theme.LinksaverTheme
-import androidx.core.net.toUri
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     context.startActivity(intent)
                 }
-                
+
                 NavHost(navController = navController, startDestination = "list") {
                     composable("list") {
                         LinkListScreen(

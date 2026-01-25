@@ -44,10 +44,9 @@ class LinkRepository(private val context: Context) {
 
     fun getApi(settings: AppSettings): LinkApi? {
         if (settings.baseUrl.isBlank()) return null
-        
+
         val authToken = Credentials.basic(settings.username, settings.password)
 
-                
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
@@ -55,7 +54,7 @@ class LinkRepository(private val context: Context) {
                     .build()
                 chain.proceed(request)
             }
-            .addNetworkInterceptor { 
+            .addNetworkInterceptor {
                 Log.d("LinkRepository", "Request: ${it.request().url} ${it.request().method} ${it.request().headers}")
                 val response = it.proceed(it.request())
                 Log.d("LinkRepository", "Response: ${response.code} ${response.headers}")
