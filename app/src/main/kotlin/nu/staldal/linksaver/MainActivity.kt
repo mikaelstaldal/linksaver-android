@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                         LinkListScreen(
                             repository = repository,
                             onAddLink = { navController.navigate("add") },
-                            onEditLink = { id -> navController.navigate("edit/$id") },
+                            onEditItem = { id -> navController.navigate("edit/$id") },
                             onOpenLink = onOpenLink,
                             onSettings = { navController.navigate("settings") }
                         )

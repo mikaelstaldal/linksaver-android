@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import nu.staldal.linksaver.R
 import nu.staldal.linksaver.data.AppSettings
@@ -50,12 +51,12 @@ import nu.staldal.linksaver.data.LinkRepository
 fun LinkListScreen(
     repository: LinkRepository,
     onAddLink: () -> Unit,
-    onEditLink: (String) -> Unit,
+    onEditItem: (String) -> Unit,
     onOpenLink: (String) -> Unit,
     onSettings: () -> Unit
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
-    var links by remember { mutableStateOf<List<Link>>(emptyList()) }
+    var items by remember { mutableStateOf<List<Link>>(emptyList()) }
     var isRefreshing by remember { mutableStateOf(false) }
     var searchTerm by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -67,12 +68,33 @@ fun LinkListScreen(
             if (api != null) {
                 isRefreshing = true
                 try {
-                    links = api.getLinks(searchTerm.takeIf { it.isNotBlank() })
+                    items = api.getLinks(searchTerm.takeIf { it.isNotBlank() })
                 } catch (e: Exception) {
                     Log.w("LinkListScreen", "Error fetching links: ${e.message}", e)
                     snackbarHostState.showSnackbar("Error fetching links: ${e.message}")
                 } finally {
                     isRefreshing = false
+                }
+            }
+        }
+    }
+
+    fun onDeleteItem(
+        scope: CoroutineScope,
+        repository: LinkRepository,
+        settings: AppSettings,
+        link: Link,
+        snackbarHostState: SnackbarHostState
+    ) {
+        scope.launch {
+            val api = repository.getApi(settings)
+            if (api != null) {
+                try {
+                    api.deleteLink(link.ID)
+                    refreshLinks()
+                } catch (e: Exception) {
+                    Log.w("LinkListScreen", "Error deleting link: ${e.message}", e)
+                    snackbarHostState.showSnackbar("Error deleting link: ${e.message}")
                 }
             }
         }
@@ -118,31 +140,28 @@ fun LinkListScreen(
                     .padding(8.dp)
             )
             LazyColumn {
-                items(links) { link ->
-                    LinkItem(
-                        link = link,
-                        onClick = { onOpenLink(link.URL) },
-                        onEdit = { onEditLink(link.ID) },
-                        onDelete = {
-                            scope.launch {
-                                val api = repository.getApi(settings)
-                                if (api != null) {
-                                    try {
-                                        api.deleteLink(link.ID)
-                                        refreshLinks()
-                                    } catch (e: Exception) {
-                                        Log.w("LinkListScreen", "Error deleting link: ${e.message}", e)
-                                        snackbarHostState.showSnackbar("Error deleting link: ${e.message}")
-                                    }
-                                }
-                            }
-                        }
-                    )
+                items(items) { link ->
+                    if (isNote(link)) {
+                        NoteItem(
+                            link = link,
+                            onEdit = { onEditItem(link.ID) },
+                            onDelete = { onDeleteItem(scope, repository, settings, link, snackbarHostState) },
+                        )
+                    } else {
+                        LinkItem(
+                            link = link,
+                            onClick = { onOpenLink(link.URL) },
+                            onEdit = { onEditItem(link.ID) },
+                            onDelete = { onDeleteItem(scope, repository, settings, link, snackbarHostState) },
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+fun isNote(link: Link) = link.URL.startsWith("note:")
 
 @Composable
 fun LinkItem(
@@ -167,6 +186,44 @@ fun LinkItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = link.Title, style = MaterialTheme.typography.titleMedium)
                 Text(text = link.URL, style = MaterialTheme.typography.bodySmall)
+                link.Description.let {
+                    if (it.isNotBlank()) {
+                        Text(text = it, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+            Row {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun NoteItem(
+    link: Link,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = link.Title, style = MaterialTheme.typography.titleMedium)
                 link.Description.let {
                     if (it.isNotBlank()) {
                         Text(text = it, style = MaterialTheme.typography.bodyMedium)
