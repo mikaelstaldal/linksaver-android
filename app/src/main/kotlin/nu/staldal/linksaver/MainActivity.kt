@@ -12,9 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import nu.staldal.linksaver.data.LinkRepository
-import nu.staldal.linksaver.ui.EditLinkScreen
-import nu.staldal.linksaver.ui.LinkListScreen
+import nu.staldal.linksaver.data.ItemRepository
+import nu.staldal.linksaver.ui.EditScreen
+import nu.staldal.linksaver.ui.ListScreen
 import nu.staldal.linksaver.ui.SettingsScreen
 import nu.staldal.linksaver.ui.theme.LinksaverTheme
 import java.net.URLDecoder
@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
             LinksaverTheme {
                 val navController = rememberNavController()
                 val context = LocalContext.current
-                val repository = remember { LinkRepository(context) }
+                val repository = remember { ItemRepository(context) }
 
                 val onOpenLink: (String) -> Unit = { url ->
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(navController = navController, startDestination = "list") {
                     composable("list") {
-                        LinkListScreen(
+                        ListScreen(
                             repository = repository,
                             onAddLink = { navController.navigate("add") },
                             onEditItem = { id -> navController.navigate("edit/$id") },
@@ -61,24 +61,24 @@ class MainActivity : ComponentActivity() {
                         val initialUrl = backStackEntry.arguments?.getString("url")?.let {
                             URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
                         }
-                        EditLinkScreen(
+                        EditScreen(
                             repository = repository,
-                            linkId = null,
+                            itemId = null,
                             onBack = { navController.popBackStack() }
                         )
                     }
                     composable("add") {
-                        EditLinkScreen(
+                        EditScreen(
                             repository = repository,
-                            linkId = null,
+                            itemId = null,
                             onBack = { navController.popBackStack() }
                         )
                     }
                     composable("edit/{id}") { backStackEntry ->
                         val id = backStackEntry.arguments?.getString("id")
-                        EditLinkScreen(
+                        EditScreen(
                             repository = repository,
-                            linkId = id,
+                            itemId = id,
                             onBack = { navController.popBackStack() }
                         )
                     }

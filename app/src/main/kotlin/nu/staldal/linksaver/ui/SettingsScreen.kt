@@ -29,12 +29,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import nu.staldal.linksaver.R
 import nu.staldal.linksaver.data.AppSettings
-import nu.staldal.linksaver.data.LinkRepository
+import nu.staldal.linksaver.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    repository: LinkRepository,
+    repository: ItemRepository,
     onBack: () -> Unit
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))

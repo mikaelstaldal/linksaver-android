@@ -20,7 +20,7 @@ data class AppSettings(
     val password: String
 )
 
-class LinkRepository(private val context: Context) {
+class ItemRepository(private val context: Context) {
 
     private val KEY_BASE_URL = stringPreferencesKey("base_url")
     private val KEY_USERNAME = stringPreferencesKey("username")
@@ -42,7 +42,7 @@ class LinkRepository(private val context: Context) {
         }
     }
 
-    fun getApi(settings: AppSettings): LinkApi? {
+    fun getApi(settings: AppSettings): ItemApi? {
         if (settings.baseUrl.isBlank()) return null
 
         val authToken = Credentials.basic(settings.username, settings.password)
@@ -55,9 +55,9 @@ class LinkRepository(private val context: Context) {
                 chain.proceed(request)
             }
             .addNetworkInterceptor {
-                Log.d("LinkRepository", "Request: ${it.request().url} ${it.request().method} ${it.request().headers}")
+                Log.d("ItemRepository", "Request: ${it.request().url} ${it.request().method} ${it.request().headers}")
                 val response = it.proceed(it.request())
-                Log.d("LinkRepository", "Response: ${response.code} ${response.headers}")
+                Log.d("ItemRepository", "Response: ${response.code} ${response.headers}")
                 response
             }
             .build()
@@ -68,6 +68,6 @@ class LinkRepository(private val context: Context) {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        return retrofit.create(LinkApi::class.java)
+        return retrofit.create(ItemApi::class.java)
     }
 }

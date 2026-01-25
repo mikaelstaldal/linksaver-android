@@ -10,15 +10,15 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface LinkApi {
+interface ItemApi {
     @GET("./")
     @Headers("Accept: application/json")
-    suspend fun getLinks(@Query("s") searchTerm: String? = null): List<Link>
+    suspend fun getItems(@Query("s") searchTerm: String? = null): List<Item>
 
     @POST("./")
     @Headers("Accept: application/json")
     @FormUrlEncoded
-    suspend fun addLink(@Field("url") url: String): List<Link>
+    suspend fun addLink(@Field("url") url: String): List<Item>
 
     @POST("./")
     @Headers("Accept: application/json")
@@ -26,20 +26,21 @@ interface LinkApi {
     suspend fun addNote(
         @Field("note-title") title: String,
         @Field("note-text") text: String,
-    ): List<Link>
+    ): List<Item>
 
     @GET("{id}")
     @Headers("Accept: application/json")
-    suspend fun getLink(@Path("id") id: String): Link
+    suspend fun getItem(@Path("id") id: String): Item
 
     @PATCH("{id}")
     @Headers("Accept: application/json")
     @FormUrlEncoded
-    suspend fun updateLink(
+    suspend fun updateItem(
         @Path("id") id: String,
         @Field("title") title: String,
-    ): Link
+        @Field("description") description: String,
+    ): Item
 
     @DELETE("{id}")
-    suspend fun deleteLink(@Path("id") id: String)
+    suspend fun deleteItem(@Path("id") id: String)
 }

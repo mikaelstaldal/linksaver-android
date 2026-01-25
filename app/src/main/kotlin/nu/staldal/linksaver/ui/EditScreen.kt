@@ -37,13 +37,13 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import nu.staldal.linksaver.R
 import nu.staldal.linksaver.data.AppSettings
-import nu.staldal.linksaver.data.LinkRepository
+import nu.staldal.linksaver.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditLinkScreen(
-    repository: LinkRepository,
-    linkId: String?,
+fun EditScreen(
+    repository: ItemRepository,
+    itemId: String?,
     onBack: () -> Unit
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
@@ -56,19 +56,19 @@ fun EditLinkScreen(
     var description by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-    val isEdit = linkId != null
+    val isEdit = itemId != null
 
-    LaunchedEffect(linkId, settings) {
+    LaunchedEffect(itemId, settings) {
         if (isEdit) {
             val api = repository.getApi(settings)
             if (api != null) {
                 try {
-                    val link = api.getLink(linkId)
+                    val link = api.getItem(itemId)
                     url = link.URL
                     title = link.Title
                     description = link.Description
                 } catch (e: Exception) {
-                    Log.w("EditLinkScreen", "Error fetching link: ${e.message}", e)
+                    Log.w("EditScreen", "Error fetching link: ${e.message}", e)
                     snackbarHostState.showSnackbar("Error fetching link: ${e.message}")
                 }
             }
@@ -117,14 +117,12 @@ fun EditLinkScreen(
                 label = { Text(stringResource(R.string.title)) },
                 modifier = Modifier.fillMaxWidth()
             )
-            if (!isEdit) {
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text(stringResource(R.string.description)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text(stringResource(R.string.description)) },
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Button(
                 onClick = {
@@ -134,13 +132,13 @@ fun EditLinkScreen(
                         if (api != null) {
                             try {
                                 if (isEdit) {
-                                    api.updateLink(linkId, title)
+                                    api.updateItem(itemId, title, description)
                                 } else {
                                     api.addLink(url)
                                 }
                                 onBack()
                             } catch (e: Exception) {
-                                Log.w("EditLinkScreen", "Error fetching link: ${e.message}", e)
+                                Log.w("EditScreen", "Error fetching link: ${e.message}", e)
                                 snackbarHostState.showSnackbar("Error saving link: ${e.message}")
                             } finally {
                                 isLoading = false

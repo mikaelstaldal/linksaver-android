@@ -10,7 +10,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import nu.staldal.linksaver.data.LinkRepository
+import nu.staldal.linksaver.data.ItemRepository
 
 class ShareActivity : Activity() {
     private val scope = MainScope()
@@ -28,7 +28,7 @@ class ShareActivity : Activity() {
     }
 
     private fun saveUrl(url: String) {
-        val repository = LinkRepository(this)
+        val repository = ItemRepository(this)
         scope.launch {
             try {
                 val settings = repository.settingsFlow.first()
