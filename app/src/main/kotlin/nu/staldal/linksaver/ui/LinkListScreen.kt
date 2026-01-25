@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +28,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,6 +56,7 @@ fun LinkListScreen(
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     var links by remember { mutableStateOf<List<Link>>(emptyList()) }
+    var isRefreshing by remember { mutableStateOf(false) }
     var searchTerm by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -62,14 +65,22 @@ fun LinkListScreen(
         scope.launch {
             val api = repository.getApi(settings)
             if (api != null) {
+                isRefreshing = true
                 try {
                     links = api.getLinks(searchTerm.takeIf { it.isNotBlank() })
                 } catch (e: Exception) {
-                    Log.w("ListLinkScreen", "Error fetching links: ${e.message}", e)
+                    Log.w("LinkListScreen", "Error fetching links: ${e.message}", e)
                     snackbarHostState.showSnackbar("Error fetching links: ${e.message}")
+                } finally {
+                    isRefreshing = false
                 }
             }
         }
+    }
+
+    DisposableEffect(Unit) {
+        refreshLinks()
+        onDispose { }
     }
 
     LaunchedEffect(settings, searchTerm) {
@@ -82,8 +93,11 @@ fun LinkListScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(onClick = { refreshLinks() }, enabled = !isRefreshing) {
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh))
+                    }
                     IconButton(onClick = onSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings))
                     }
                 }
             )
@@ -117,7 +131,7 @@ fun LinkListScreen(
                                         api.deleteLink(link.ID)
                                         refreshLinks()
                                     } catch (e: Exception) {
-                                        Log.w("ListLinkScreen", "Error deleting link: ${e.message}", e)
+                                        Log.w("LinkListScreen", "Error deleting link: ${e.message}", e)
                                         snackbarHostState.showSnackbar("Error deleting link: ${e.message}")
                                     }
                                 }
