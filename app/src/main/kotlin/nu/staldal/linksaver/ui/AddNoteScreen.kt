@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,7 +23,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -40,40 +41,24 @@ import nu.staldal.linksaver.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditScreen(
+fun AddNoteScreen(
     repository: ItemRepository,
-    itemId: String,
     onBack: () -> Unit
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val clipboardManager = LocalClipboardManager.current
 
-    var url by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
-
-    LaunchedEffect(itemId, settings) {
-        val api = repository.getApi(settings)
-        if (api != null) {
-            try {
-                val link = api.getItem(itemId)
-                url = link.URL
-                title = link.Title
-                description = link.Description
-            } catch (e: Exception) {
-                Log.w("EditScreen", "Error fetching link: ${e.message}", e)
-                snackbarHostState.showSnackbar("Error fetching link: ${e.message}")
-            }
-        }
-    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.edit_link)) },
+                title = { Text(stringResource(R.string.add_note)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -90,23 +75,32 @@ fun EditScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = url,
-                onValueChange = { url = it },
-                label = { Text(stringResource(R.string.url)) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = false, // URL cannot be edited according to API description (only PATCH {id} for title and description)
-            )
-            OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text(stringResource(R.string.title)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                trailingIcon = {
+                    IconButton(onClick = {
+                        clipboardManager.getText()?.let { title = it.text }
+                    }) {
+                        Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
+                    }
+                }
             )
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text(stringResource(R.string.description)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                trailingIcon = {
+                    IconButton(onClick = {
+                        clipboardManager.getText()?.let { description = it.text }
+                    }) {
+                        Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
+                    }
+                }
             )
 
             Button(
@@ -116,11 +110,11 @@ fun EditScreen(
                         val api = repository.getApi(settings)
                         if (api != null) {
                             try {
-                                api.updateItem(itemId, title, description)
+                                api.addNote(title, description)
                                 onBack()
                             } catch (e: Exception) {
-                                Log.w("EditScreen", "Error fetching link: ${e.message}", e)
-                                snackbarHostState.showSnackbar("Error saving link: ${e.message}")
+                                Log.w("AddNoteScreen", "Error saving note: ${e.message}", e)
+                                snackbarHostState.showSnackbar("Error saving note: ${e.message}")
                             } finally {
                                 isLoading = false
                             }
@@ -131,7 +125,7 @@ fun EditScreen(
                     }
                 },
                 modifier = Modifier.align(Alignment.End),
-                enabled = !isLoading && url.isNotBlank()
+                enabled = !isLoading && title.isNotBlank() && description.isNotBlank()
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(

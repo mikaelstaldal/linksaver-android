@@ -5,12 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.NoteAdd
+import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
@@ -51,9 +54,10 @@ import nu.staldal.linksaver.data.ItemRepository
 fun ListScreen(
     repository: ItemRepository,
     onAddLink: () -> Unit,
+    onAddNote: () -> Unit,
     onEditItem: (String) -> Unit,
     onOpenLink: (String) -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     var items by remember { mutableStateOf<List<Item>>(emptyList()) }
@@ -125,8 +129,14 @@ fun ListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddLink) {
-                Icon(Icons.Default.Add, contentDescription = "Add Link")
+            Column {
+                FloatingActionButton(onClick = onAddLink) {
+                    Icon(Icons.Filled.AddLink, contentDescription = stringResource(R.string.add_link))
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                FloatingActionButton(onClick = onAddNote) {
+                    Icon(Icons.AutoMirrored.Filled.NoteAdd, contentDescription = stringResource(R.string.add_note))
+                }
             }
         }
     ) { padding ->

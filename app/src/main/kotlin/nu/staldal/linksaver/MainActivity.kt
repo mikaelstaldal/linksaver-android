@@ -7,18 +7,16 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import nu.staldal.linksaver.data.ItemRepository
+import nu.staldal.linksaver.ui.AddLinkScreen
+import nu.staldal.linksaver.ui.AddNoteScreen
 import nu.staldal.linksaver.ui.EditScreen
 import nu.staldal.linksaver.ui.ListScreen
 import nu.staldal.linksaver.ui.SettingsScreen
 import nu.staldal.linksaver.ui.theme.LinksaverTheme
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +36,8 @@ class MainActivity : ComponentActivity() {
                     composable("list") {
                         ListScreen(
                             repository = repository,
-                            onAddLink = { navController.navigate("add") },
+                            onAddLink = { navController.navigate("add-link") },
+                            onAddNote = { navController.navigate("add-note") },
                             onEditItem = { id -> navController.navigate("edit/$id") },
                             onOpenLink = onOpenLink,
                             onSettings = { navController.navigate("settings") }
@@ -50,32 +49,20 @@ class MainActivity : ComponentActivity() {
                             onBack = { navController.popBackStack() }
                         )
                     }
-                    composable(
-                        route = "add?url={url}",
-                        arguments = listOf(navArgument("url") {
-                            type = NavType.StringType
-                            nullable = true
-                            defaultValue = null
-                        })
-                    ) { backStackEntry ->
-                        val initialUrl = backStackEntry.arguments?.getString("url")?.let {
-                            URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-                        }
-                        EditScreen(
+                    composable("add-link") {
+                        AddLinkScreen(
                             repository = repository,
-                            itemId = null,
                             onBack = { navController.popBackStack() }
                         )
                     }
-                    composable("add") {
-                        EditScreen(
+                    composable("add-note") {
+                        AddNoteScreen(
                             repository = repository,
-                            itemId = null,
                             onBack = { navController.popBackStack() }
                         )
                     }
                     composable("edit/{id}") { backStackEntry ->
-                        val id = backStackEntry.arguments?.getString("id")
+                        val id = backStackEntry.arguments?.getString("id")!!
                         EditScreen(
                             repository = repository,
                             itemId = id,
