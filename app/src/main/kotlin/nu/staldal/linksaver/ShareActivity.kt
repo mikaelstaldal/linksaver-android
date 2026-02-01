@@ -46,7 +46,7 @@ class ShareActivity : Activity() {
                 if (e.code() == 409) {
                     Toast.makeText(this@ShareActivity, R.string.link_already_exists, Toast.LENGTH_LONG).show()
                 } else {
-                    Log.w("ShareActivity", getString(R.string.error_saving_link, e.message), e)
+                    Log.w("ShareActivity", "Error saving link: ${e.message}", e)
                     Toast.makeText(
                         this@ShareActivity,
                         getString(R.string.error_saving_link, e.message),
@@ -54,7 +54,7 @@ class ShareActivity : Activity() {
                     ).show()
                 }
             } catch (e: Exception) {
-                Log.w("ShareActivity", getString(R.string.error_saving_link, e.message), e)
+                Log.w("ShareActivity", "Error saving link: ${e.message}", e)
                 Toast.makeText(
                     this@ShareActivity,
                     getString(R.string.error_saving_link, e.message),

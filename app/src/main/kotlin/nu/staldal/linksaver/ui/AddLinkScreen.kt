@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -48,6 +49,7 @@ fun AddLinkScreen(
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     val linkAlreadyExistsMessage = stringResource(R.string.link_already_exists)
     val clipboardManager = LocalClipboardManager.current
 
@@ -103,17 +105,17 @@ fun AddLinkScreen(
                                     snackbarHostState.showSnackbar(linkAlreadyExistsMessage)
                                 } else {
                                     Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
-                                    snackbarHostState.showSnackbar( "Error saving link: ${e.message}")
+                                    snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
                                 }
                             } catch (e: Exception) {
                                 Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
-                                snackbarHostState.showSnackbar("Error saving link: ${e.message}")
+                                snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
                             } finally {
                                 isLoading = false
                             }
                         } else {
                             isLoading = false
-                            snackbarHostState.showSnackbar("Settings not configured")
+                            snackbarHostState.showSnackbar(context.getString(R.string.settings_not_configured))
                         }
                     }
                 },

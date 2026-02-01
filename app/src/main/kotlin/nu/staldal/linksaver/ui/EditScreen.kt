@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -48,6 +49,7 @@ fun EditScreen(
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     var url by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
@@ -63,8 +65,8 @@ fun EditScreen(
                 title = link.Title
                 description = link.Description
             } catch (e: Exception) {
-                Log.w("EditScreen", "Error fetching link: ${e.message}", e)
-                snackbarHostState.showSnackbar("Error fetching link: ${e.message}")
+                Log.w("EditScreen", "Error fetching item: ${e.message}", e)
+                snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_item, e.message))
             }
         }
     }
@@ -73,7 +75,7 @@ fun EditScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.edit_link)) },
+                title = { Text(stringResource(R.string.edit_item)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -120,13 +122,13 @@ fun EditScreen(
                                 onBack()
                             } catch (e: Exception) {
                                 Log.w("EditScreen", "Error fetching link: ${e.message}", e)
-                                snackbarHostState.showSnackbar("Error saving link: ${e.message}")
+                                snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
                             } finally {
                                 isLoading = false
                             }
                         } else {
                             isLoading = false
-                            snackbarHostState.showSnackbar("Settings not configured")
+                            snackbarHostState.showSnackbar(context.getString(R.string.settings_not_configured))
                         }
                     }
                 },

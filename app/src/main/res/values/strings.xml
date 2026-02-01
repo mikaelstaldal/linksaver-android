@@ -8,7 +8,7 @@
     <string name="save">Save</string>
     <string name="add_link">Add link</string>
     <string name="add_note">Add note</string>
-    <string name="edit_link">Edit item</string>
+    <string name="edit_item">Edit item</string>
     <string name="url">URL</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
@@ -20,6 +20,10 @@
     <string name="paste">Paste</string>
     <string name="link_saved">Link saved</string>
     <string name="error_saving_link">Error saving link: %s</string>
+    <string name="error_saving_note">Error saving note: %s</string>
+    <string name="error_fetching_item">Error fetching item: %s</string>
+    <string name="error_fetching_items">Error fetching items: %s</string>
+    <string name="error_deleting_item">Error deleting item: %s</string>
     <string name="link_already_exists">Link already exists</string>
     <string name="settings_not_configured">Settings not configured</string>
 </resources>

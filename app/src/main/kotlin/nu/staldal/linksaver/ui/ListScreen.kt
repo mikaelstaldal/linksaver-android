@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -65,6 +66,7 @@ fun ListScreen(
     var searchTerm by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     fun refreshLinks() {
         scope.launch {
@@ -74,8 +76,8 @@ fun ListScreen(
                 try {
                     items = api.getItems(searchTerm.takeIf { it.isNotBlank() })
                 } catch (e: Exception) {
-                    Log.w("ListScreen", "Error fetching links: ${e.message}", e)
-                    snackbarHostState.showSnackbar("Error fetching links: ${e.message}")
+                    Log.w("ListScreen", "Error fetching items: ${e.message}", e)
+                    snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_items, e.message))
                 } finally {
                     isRefreshing = false
                 }
@@ -97,8 +99,8 @@ fun ListScreen(
                     api.deleteItem(item.ID)
                     refreshLinks()
                 } catch (e: Exception) {
-                    Log.w("ListScreen", "Error deleting link: ${e.message}", e)
-                    snackbarHostState.showSnackbar("Error deleting link: ${e.message}")
+                    Log.w("ListScreen", "Error deleting item: ${e.message}", e)
+                    snackbarHostState.showSnackbar(context.getString(R.string.error_deleting_item, e.message))
                 }
             }
         }
