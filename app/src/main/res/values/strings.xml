@@ -20,5 +20,6 @@
     <string name="paste">Paste</string>
     <string name="link_saved">Link saved</string>
     <string name="error_saving_link">Error saving link: %s</string>
+    <string name="link_already_exists">Link already exists</string>
     <string name="settings_not_configured">Settings not configured</string>
 </resources>

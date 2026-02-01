@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nu.staldal.linksaver.data.ItemRepository
+import retrofit2.HttpException
 
 class ShareActivity : Activity() {
     private val scope = MainScope()
@@ -40,6 +41,17 @@ class ShareActivity : Activity() {
                     Toast.makeText(this@ShareActivity, R.string.link_saved, Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(this@ShareActivity, R.string.settings_not_configured, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: HttpException) {
+                if (e.code() == 409) {
+                    Toast.makeText(this@ShareActivity, R.string.link_already_exists, Toast.LENGTH_LONG).show()
+                } else {
+                    Log.w("ShareActivity", getString(R.string.error_saving_link, e.message), e)
+                    Toast.makeText(
+                        this@ShareActivity,
+                        getString(R.string.error_saving_link, e.message),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } catch (e: Exception) {
                 Log.w("ShareActivity", getString(R.string.error_saving_link, e.message), e)

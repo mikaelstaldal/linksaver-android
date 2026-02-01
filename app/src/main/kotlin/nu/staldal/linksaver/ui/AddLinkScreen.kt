@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import nu.staldal.linksaver.R
 import nu.staldal.linksaver.data.AppSettings
 import nu.staldal.linksaver.data.ItemRepository
+import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +48,7 @@ fun AddLinkScreen(
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val linkAlreadyExistsMessage = stringResource(R.string.link_already_exists)
     val clipboardManager = LocalClipboardManager.current
 
     var url by remember { mutableStateOf("") }
@@ -96,6 +98,13 @@ fun AddLinkScreen(
                             try {
                                 api.addLink(url)
                                 onBack()
+                            } catch (e: HttpException) {
+                                if (e.code() == 409) {
+                                    snackbarHostState.showSnackbar(linkAlreadyExistsMessage)
+                                } else {
+                                    Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
+                                    snackbarHostState.showSnackbar( "Error saving link: ${e.message}")
+                                }
                             } catch (e: Exception) {
                                 Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
                                 snackbarHostState.showSnackbar("Error saving link: ${e.message}")
