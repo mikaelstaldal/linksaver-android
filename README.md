@@ -51,7 +51,6 @@ It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, 
 - `gradle assembleDebug`: Build the debug APK.
 - `gradle bundleRelease`: Build the release App Bundle.
 - `gradle test`: Run unit tests.
-- `gradle connectedAndroidTest`: Run instrumented tests on a device/emulator.
 - `gradle lint`: Run static analysis.
 
 ## Project Structure
@@ -82,8 +81,7 @@ The application uses Android DataStore to persist user settings locally on the d
 
 ## Tests
 
-- **Unit Tests:** Located in `app/src/test`. Run with `./gradlew test`.
-- **Instrumented Tests:** Located in `app/src/androidTest`. Run with `./gradlew connectedAndroidTest`.
+- **Unit Tests:** Located in `app/src/test`. Run with `gradle test`.
 
 ## License
 
