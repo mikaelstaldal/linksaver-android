@@ -65,6 +65,45 @@ fun AddNoteScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                val api = repository.getApi(settings)
+                                if (api != null) {
+                                    try {
+                                        api.addNote(title, description)
+                                        onBack()
+                                    } catch (e: Exception) {
+                                        Log.w("AddNoteScreen", "Error saving note: ${e.message}", e)
+                                        snackbarHostState.showSnackbar(
+                                            context.getString(
+                                                R.string.error_saving_note,
+                                                e.message
+                                            )
+                                        )
+                                    } finally {
+                                        isLoading = false
+                                    }
+                                } else {
+                                    isLoading = false
+                                    snackbarHostState.showSnackbar(context.getString(R.string.settings_not_configured))
+                                }
+                            }
+                        },
+                        enabled = !isLoading && title.isNotBlank() && description.isNotBlank()
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(stringResource(R.string.save))
+                        }
+                    }
                 }
             )
         }
@@ -104,40 +143,6 @@ fun AddNoteScreen(
                     }
                 }
             )
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        isLoading = true
-                        val api = repository.getApi(settings)
-                        if (api != null) {
-                            try {
-                                api.addNote(title, description)
-                                onBack()
-                            } catch (e: Exception) {
-                                Log.w("AddNoteScreen", "Error saving note: ${e.message}", e)
-                                snackbarHostState.showSnackbar(context.getString(R.string.error_saving_note, e.message))
-                            } finally {
-                                isLoading = false
-                            }
-                        } else {
-                            isLoading = false
-                            snackbarHostState.showSnackbar(context.getString(R.string.settings_not_configured))
-                        }
-                    }
-                },
-                modifier = Modifier.align(Alignment.End),
-                enabled = !isLoading && title.isNotBlank() && description.isNotBlank()
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(stringResource(R.string.save))
-                }
-            }
         }
     }
 }

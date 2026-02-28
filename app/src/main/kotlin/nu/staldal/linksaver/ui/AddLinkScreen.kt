@@ -65,6 +65,57 @@ fun AddLinkScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                val api = repository.getApi(settings)
+                                if (api != null) {
+                                    try {
+                                        api.addLink(url)
+                                        onBack()
+                                    } catch (e: HttpException) {
+                                        if (e.code() == 409) {
+                                            snackbarHostState.showSnackbar(linkAlreadyExistsMessage)
+                                        } else {
+                                            Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
+                                            snackbarHostState.showSnackbar(
+                                                context.getString(
+                                                    R.string.error_saving_link,
+                                                    e.message
+                                                )
+                                            )
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
+                                        snackbarHostState.showSnackbar(
+                                            context.getString(
+                                                R.string.error_saving_link,
+                                                e.message
+                                            )
+                                        )
+                                    } finally {
+                                        isLoading = false
+                                    }
+                                } else {
+                                    isLoading = false
+                                    snackbarHostState.showSnackbar(context.getString(R.string.settings_not_configured))
+                                }
+                            }
+                        },
+                        enabled = !isLoading && url.isNotBlank()
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(stringResource(R.string.save))
+                        }
+                    }
                 }
             )
         }
@@ -90,47 +141,6 @@ fun AddLinkScreen(
                     }
                 }
             )
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        isLoading = true
-                        val api = repository.getApi(settings)
-                        if (api != null) {
-                            try {
-                                api.addLink(url)
-                                onBack()
-                            } catch (e: HttpException) {
-                                if (e.code() == 409) {
-                                    snackbarHostState.showSnackbar(linkAlreadyExistsMessage)
-                                } else {
-                                    Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
-                                    snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
-                                }
-                            } catch (e: Exception) {
-                                Log.w("AddLinkScreen", "Error saving link: ${e.message}", e)
-                                snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
-                            } finally {
-                                isLoading = false
-                            }
-                        } else {
-                            isLoading = false
-                            snackbarHostState.showSnackbar(context.getString(R.string.settings_not_configured))
-                        }
-                    }
-                },
-                modifier = Modifier.align(androidx.compose.ui.Alignment.End),
-                enabled = !isLoading && url.isNotBlank()
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(stringResource(R.string.save))
-                }
-            }
         }
     }
 }
