@@ -92,8 +92,9 @@ fun AddNoteScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text(stringResource(R.string.description)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().weight(1f),
                 enabled = true,
+                minLines = 5,
                 trailingIcon = {
                     IconButton(onClick = {
                         clipboardManager.getText()?.let { description = it.text }
