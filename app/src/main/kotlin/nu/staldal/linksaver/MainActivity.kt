@@ -21,6 +21,9 @@ import nu.staldal.linksaver.ui.theme.LinksaverTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        ItemRepository.enqueueSyncWork(this)
+
         setContent {
             LinksaverTheme {
                 val navController = rememberNavController()

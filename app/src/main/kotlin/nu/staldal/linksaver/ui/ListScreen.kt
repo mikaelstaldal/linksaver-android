@@ -31,8 +31,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,10 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import nu.staldal.linksaver.R
-import nu.staldal.linksaver.data.AppSettings
 import nu.staldal.linksaver.data.Item
 import nu.staldal.linksaver.data.ItemRepository
 
@@ -60,59 +56,37 @@ fun ListScreen(
     onOpenLink: (String) -> Unit,
     onSettings: () -> Unit,
 ) {
-    val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
-    var items by remember { mutableStateOf<List<Item>>(emptyList()) }
     var isRefreshing by remember { mutableStateOf(false) }
     var searchTerm by remember { mutableStateOf("") }
+    val items by repository.getItems(searchTerm).collectAsState(initial = emptyList())
+    val isConnected by repository.isConnected.collectAsState(initial = false)
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
     fun refreshLinks() {
         scope.launch {
-            val api = repository.getApi(settings)
-            if (api != null) {
-                isRefreshing = true
-                try {
-                    items = api.getItems(searchTerm.takeIf { it.isNotBlank() })
-                } catch (e: Exception) {
-                    Log.w("ListScreen", "Error fetching items: ${e.message}", e)
-                    snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_items, e.message))
-                } finally {
-                    isRefreshing = false
-                }
+            isRefreshing = true
+            try {
+                repository.refreshFromServer()
+            } catch (e: Exception) {
+                Log.w("ListScreen", "Error fetching items: ${e.message}", e)
+                snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_items, e.message))
+            } finally {
+                isRefreshing = false
             }
         }
     }
 
-    fun onDeleteItem(
-        scope: CoroutineScope,
-        repository: ItemRepository,
-        settings: AppSettings,
-        item: Item,
-        snackbarHostState: SnackbarHostState
-    ) {
+    fun onDeleteItem(item: Item) {
         scope.launch {
-            val api = repository.getApi(settings)
-            if (api != null) {
-                try {
-                    api.deleteItem(item.ID)
-                    refreshLinks()
-                } catch (e: Exception) {
-                    Log.w("ListScreen", "Error deleting item: ${e.message}", e)
-                    snackbarHostState.showSnackbar(context.getString(R.string.error_deleting_item, e.message))
-                }
+            try {
+                repository.deleteItem(item.ID)
+            } catch (e: Exception) {
+                Log.w("ListScreen", "Error deleting item: ${e.message}", e)
+                snackbarHostState.showSnackbar(context.getString(R.string.error_deleting_item, e.message))
             }
         }
-    }
-
-    DisposableEffect(Unit) {
-        refreshLinks()
-        onDispose { }
-    }
-
-    LaunchedEffect(settings, searchTerm) {
-        refreshLinks()
     }
 
     Scaffold(
@@ -121,7 +95,7 @@ fun ListScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    IconButton(onClick = { refreshLinks() }, enabled = !isRefreshing) {
+                    IconButton(onClick = { refreshLinks() }, enabled = isConnected && !isRefreshing) {
                         Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh))
                     }
                     IconButton(onClick = onSettings) {
@@ -157,14 +131,14 @@ fun ListScreen(
                         NoteItem(
                             item = item,
                             onEdit = { onEditItem(item.ID) },
-                            onDelete = { onDeleteItem(scope, repository, settings, item, snackbarHostState) },
+                            onDelete = { onDeleteItem(item) },
                         )
                     } else {
                         LinkItem(
                             item = item,
                             onClick = { onOpenLink(item.URL) },
                             onEdit = { onEditItem(item.ID) },
-                            onDelete = { onDeleteItem(scope, repository, settings, item, snackbarHostState) },
+                            onDelete = { onDeleteItem(item) },
                         )
                     }
                 }

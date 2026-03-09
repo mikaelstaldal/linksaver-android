@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import nu.staldal.linksaver.R
-import nu.staldal.linksaver.data.AppSettings
 import nu.staldal.linksaver.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +44,6 @@ fun EditScreen(
     itemId: String,
     onBack: () -> Unit
 ) {
-    val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -56,18 +53,15 @@ fun EditScreen(
     var description by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(itemId, settings) {
-        val api = repository.getApi(settings)
-        if (api != null) {
-            try {
-                val link = api.getItem(itemId)
-                url = link.URL
-                title = link.Title
-                description = link.Description
-            } catch (e: Exception) {
-                Log.w("EditScreen", "Error fetching item: ${e.message}", e)
-                snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_item, e.message))
-            }
+    LaunchedEffect(itemId) {
+        val item = repository.getItemById(itemId)
+        if (item != null) {
+            url = item.URL
+            title = item.Title
+            description = item.Description
+        } else {
+            snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_item, "Item not found"))
+            onBack()
         }
     }
 
@@ -96,7 +90,7 @@ fun EditScreen(
                 onValueChange = { url = it },
                 label = { Text(stringResource(R.string.url)) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = false, // URL cannot be edited according to API description (only PATCH {id} for title and description)
+                enabled = false,
             )
             OutlinedTextField(
                 value = title,
@@ -115,20 +109,14 @@ fun EditScreen(
                 onClick = {
                     scope.launch {
                         isLoading = true
-                        val api = repository.getApi(settings)
-                        if (api != null) {
-                            try {
-                                api.updateItem(itemId, title, description)
-                                onBack()
-                            } catch (e: Exception) {
-                                Log.w("EditScreen", "Error fetching link: ${e.message}", e)
-                                snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
-                            } finally {
-                                isLoading = false
-                            }
-                        } else {
+                        try {
+                            repository.updateItem(itemId, title, description)
+                            onBack()
+                        } catch (e: Exception) {
+                            Log.w("EditScreen", "Error saving item: ${e.message}", e)
+                            snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
+                        } finally {
                             isLoading = false
-                            snackbarHostState.showSnackbar(context.getString(R.string.settings_not_configured))
                         }
                     }
                 },
