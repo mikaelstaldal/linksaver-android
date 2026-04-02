@@ -204,6 +204,9 @@ class ItemRepository(private val context: Context) {
 
                     SyncStatus.SYNCED -> { /* no-op */ }
                 }
+            } catch (e: HttpException) {
+                val errorMessage = e.response()?.errorBody()?.string()
+                Log.w("ItemRepository", "Sync failed for item ${item.id}: HTTP ${e.code()} ${e.message()} - $errorMessage")
             } catch (e: Exception) {
                 Log.w("ItemRepository", "Sync failed for item ${item.id}: ${e.message}", e)
             }
