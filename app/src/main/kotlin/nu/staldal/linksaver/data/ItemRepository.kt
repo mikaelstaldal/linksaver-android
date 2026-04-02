@@ -5,7 +5,10 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -184,9 +187,8 @@ class ItemRepository(private val context: Context) {
                             dao.deleteItem(item.id)
                             dao.replaceAllSynced(updatedList.map { it.toEntity() })
                         } catch (e: HttpException) {
-                            if (e.code() == 409) {
-                                dao.deleteItem(item.id)
-                            } else {
+                            dao.deleteItem(item.id)
+                            if (e.code() != 409) {
                                 throw e
                             }
                         }
@@ -202,13 +204,23 @@ class ItemRepository(private val context: Context) {
                         dao.deleteItem(item.id)
                     }
 
-                    SyncStatus.SYNCED -> { /* no-op */ }
+                    SyncStatus.SYNCED -> { /* no-op */
+                    }
                 }
             } catch (e: HttpException) {
                 val errorMessage = e.response()?.errorBody()?.string()
-                Log.w("ItemRepository", "Sync failed for item ${item.id}: HTTP ${e.code()} ${e.message()} - $errorMessage")
+                Log.w(
+                    "ItemRepository",
+                    "Sync failed for item ${item.id}: HTTP ${e.code()} ${e.message()} - $errorMessage"
+                )
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, errorMessage ?: "Sync failed: HTTP ${e.code()}", Toast.LENGTH_LONG).show()
+                }
             } catch (e: Exception) {
                 Log.w("ItemRepository", "Sync failed for item ${item.id}: ${e.message}", e)
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, "Sync failed: ${e.message}", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
