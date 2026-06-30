@@ -16,11 +16,17 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import retrofit2.HttpException
@@ -39,13 +45,40 @@ data class AppSettings(
 
 class ItemRepository(private val context: Context) {
 
-    private val KEY_BASE_URL = stringPreferencesKey("base_url")
-    private val KEY_USERNAME = stringPreferencesKey("username")
-    private val KEY_PASSWORD = stringPreferencesKey("password")
+    private val LEGACY_KEY_BASE_URL = stringPreferencesKey("base_url")
+    private val LEGACY_KEY_USERNAME = stringPreferencesKey("username")
+    private val LEGACY_KEY_PASSWORD = stringPreferencesKey("password")
 
+    private val credentialStore = CredentialStore.getInstance(context)
     private val dao = AppDatabase.getInstance(context).itemDao()
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    private val _settingsFlow = MutableStateFlow(credentialStore.toAppSettings())
+    val settingsFlow: StateFlow<AppSettings> = _settingsFlow.asStateFlow()
+
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            migrateCredentialsIfNeeded()
+            _settingsFlow.value = credentialStore.toAppSettings()
+        }
+    }
+
+    private suspend fun migrateCredentialsIfNeeded() {
+        if (credentialStore.hasCredentials()) return
+        val prefs = context.dataStore.data.first()
+        val baseUrl = prefs[LEGACY_KEY_BASE_URL]
+        val username = prefs[LEGACY_KEY_USERNAME]
+        val password = prefs[LEGACY_KEY_PASSWORD]
+        if (!baseUrl.isNullOrBlank() || !username.isNullOrBlank() || !password.isNullOrBlank()) {
+            credentialStore.save(baseUrl ?: "", username ?: "", password ?: "")
+            context.dataStore.edit {
+                it.remove(LEGACY_KEY_BASE_URL)
+                it.remove(LEGACY_KEY_USERNAME)
+                it.remove(LEGACY_KEY_PASSWORD)
+            }
+        }
+    }
 
     val isConnected: Flow<Boolean> = callbackFlow {
         val callback = object : ConnectivityManager.NetworkCallback() {
@@ -61,34 +94,24 @@ class ItemRepository(private val context: Context) {
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
         connectivityManager.registerNetworkCallback(request, callback)
-        // Emit initial state
         val activeNetwork = connectivityManager.activeNetwork
         val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
         trySend(capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true)
         awaitClose { connectivityManager.unregisterNetworkCallback(callback) }
     }
 
-    val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { preferences ->
-        AppSettings(
-            baseUrl = preferences[KEY_BASE_URL] ?: "",
-            username = preferences[KEY_USERNAME] ?: "",
-            password = preferences[KEY_PASSWORD] ?: ""
-        )
-    }
-
     suspend fun saveSettings(settings: AppSettings) {
-        context.dataStore.edit { preferences ->
-            preferences[KEY_BASE_URL] = settings.baseUrl
-            preferences[KEY_USERNAME] = settings.username
-            preferences[KEY_PASSWORD] = settings.password
-        }
+        credentialStore.save(settings.baseUrl, settings.username, settings.password)
+        _settingsFlow.value = settings
     }
 
-    private suspend fun getApi(): ItemApi? {
-        val settings = settingsFlow.first()
-        if (settings.baseUrl.isBlank()) return null
+    private fun getApi(): ItemApi? {
+        val baseUrl = credentialStore.baseUrl
+        if (baseUrl.isNullOrBlank()) return null
+        val username = credentialStore.username ?: ""
+        val password = credentialStore.password ?: ""
 
-        val authToken = Credentials.basic(settings.username, settings.password)
+        val authToken = Credentials.basic(username, password)
 
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
@@ -106,7 +129,7 @@ class ItemRepository(private val context: Context) {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(if (settings.baseUrl.endsWith("/")) settings.baseUrl else "${settings.baseUrl}/")
+            .baseUrl(if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
