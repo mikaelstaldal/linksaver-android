@@ -27,8 +27,10 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import nu.staldal.linksaver.BuildConfig
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -120,11 +122,13 @@ class ItemRepository(private val context: Context) {
                     .build()
                 chain.proceed(request)
             }
-            .addNetworkInterceptor {
-                Log.d("ItemRepository", "Request: ${it.request().url} ${it.request().method} ${it.request().headers}")
-                val response = it.proceed(it.request())
-                Log.d("ItemRepository", "Response: ${response.code} ${response.headers}")
-                response
+            .apply {
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(HttpLoggingInterceptor().apply {
+                        level = HttpLoggingInterceptor.Level.HEADERS
+                        redactHeader("Authorization")
+                    })
+                }
             }
             .build()
 
