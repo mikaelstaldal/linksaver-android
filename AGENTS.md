@@ -5,7 +5,7 @@ LinkSaver is an Android application built with Kotlin and Jetpack Compose. It us
 - **SDK Versions**: 
   - `compileSdk`: 36
   - `targetSdk`: 36
-  - `minSdk`: 24
+  - `minSdk`: 26
 - **Java Version**: Project uses Java 21 (`sourceCompatibility` and `targetCompatibility`).
 - **Gradle**: Uses Kotlin DSL (`.gradle.kts`) and version catalogs (`libs.versions.toml`).
 - **Invoking Gradle**: This project does *not* use Gradle wrapper, assume that the `gradle` command is available in PATH instead. 

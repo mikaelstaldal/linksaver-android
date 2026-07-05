@@ -19,7 +19,7 @@ It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, 
 
 ## Requirements
 
-- Android device or emulator running Android 7.0 (API level 24) or higher.
+- Android device or emulator running Android 8.0 (API level 26) or higher.
 - Java Development Kit (JDK) 21.
 - Android Studio Ladybug | 2024.2.1 or newer (recommended), or IntelliJ IDEA with Android plugin and Android SDK.
 
