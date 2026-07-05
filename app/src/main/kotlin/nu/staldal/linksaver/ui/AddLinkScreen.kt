@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import nu.staldal.linksaver.R
+import nu.staldal.linksaver.UrlValidator
 import nu.staldal.linksaver.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +41,7 @@ fun AddLinkScreen(
     val clipboardManager = LocalClipboardManager.current
 
     var url by remember { mutableStateOf("") }
+    val sanitizedUrl = UrlValidator.sanitize(url)
 
     Scaffold(
         topBar = {
@@ -53,12 +55,14 @@ fun AddLinkScreen(
                 actions = {
                     Button(
                         onClick = {
-                            scope.launch {
-                                repository.addLink(url)
-                                onBack()
+                            sanitizedUrl?.let { link ->
+                                scope.launch {
+                                    repository.addLink(link)
+                                    onBack()
+                                }
                             }
                         },
-                        enabled = url.isNotBlank()
+                        enabled = sanitizedUrl != null
                     ) {
                         Text(stringResource(R.string.save))
                     }
@@ -79,6 +83,12 @@ fun AddLinkScreen(
                 label = { Text(stringResource(R.string.url)) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
+                isError = url.isNotBlank() && sanitizedUrl == null,
+                supportingText = {
+                    if (url.isNotBlank() && sanitizedUrl == null) {
+                        Text(stringResource(R.string.invalid_url))
+                    }
+                },
                 trailingIcon = {
                     IconButton(onClick = {
                         clipboardManager.getText()?.let { url = it.text }
