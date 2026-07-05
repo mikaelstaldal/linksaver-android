@@ -254,10 +254,17 @@ class ItemRepository(private val context: Context) {
         }
     }
 
-    suspend fun refreshFromServer() {
-        val api = getApi() ?: return
+    /**
+     * Refreshes the local database from the server.
+     *
+     * @return true if the refresh was attempted, false if the server URL is not
+     *   configured (in which case no network request is made).
+     */
+    suspend fun refreshFromServer(): Boolean {
+        val api = getApi() ?: return false
         val serverItems = api.getItems()
         dao.replaceAllSynced(serverItems.map { it.toEntity() })
+        return true
     }
 
     private fun isConnectedNow(): Boolean {

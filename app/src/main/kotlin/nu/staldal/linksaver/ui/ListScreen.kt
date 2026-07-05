@@ -75,7 +75,9 @@ fun ListScreen(
         scope.launch {
             isRefreshing = true
             try {
-                repository.refreshFromServer()
+                if (!repository.refreshFromServer()) {
+                    snackbarHostState.showSnackbar(context.getString(R.string.server_url_not_configured))
+                }
             } catch (e: Exception) {
                 Log.w("ListScreen", "Error fetching items: ${e.message}", e)
                 snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_items, e.message))
