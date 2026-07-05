@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import java.io.IOException
+import java.security.GeneralSecurityException
+import androidx.core.content.edit
 
 class CredentialStore private constructor(private val prefs: SharedPreferences) {
 
@@ -17,11 +20,11 @@ class CredentialStore private constructor(private val prefs: SharedPreferences) 
         get() = prefs.getString(KEY_PASSWORD, null)
 
     fun save(baseUrl: String, username: String, password: String) {
-        prefs.edit()
-            .putString(KEY_BASE_URL, baseUrl)
-            .putString(KEY_USERNAME, username)
-            .putString(KEY_PASSWORD, password)
-            .apply()
+        prefs.edit {
+            putString(KEY_BASE_URL, baseUrl)
+            putString(KEY_USERNAME, username)
+            putString(KEY_PASSWORD, password)
+        }
     }
 
     fun hasCredentials(): Boolean =
@@ -34,6 +37,7 @@ class CredentialStore private constructor(private val prefs: SharedPreferences) 
     )
 
     companion object {
+        private const val PREFS_FILE_NAME = "secure_credentials"
         private const val KEY_BASE_URL = "base_url"
         private const val KEY_USERNAME = "username"
         private const val KEY_PASSWORD = "password"
@@ -50,14 +54,28 @@ class CredentialStore private constructor(private val prefs: SharedPreferences) 
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
-            val prefs = EncryptedSharedPreferences.create(
-                context,
-                "secure_credentials",
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            return CredentialStore(
+                try {
+                    buildEncryptedPrefs(context, masterKey)
+                } catch (_: GeneralSecurityException) {
+                    context.deleteSharedPreferences(PREFS_FILE_NAME)
+                    buildEncryptedPrefs(context, masterKey)
+                } catch (_: IOException) {
+                    context.deleteSharedPreferences(PREFS_FILE_NAME)
+                    buildEncryptedPrefs(context, masterKey)
+                }
             )
-            return CredentialStore(prefs)
         }
+
+        private fun buildEncryptedPrefs(
+            context: Context,
+            masterKey: MasterKey
+        ): SharedPreferences = EncryptedSharedPreferences.create(
+            context,
+            PREFS_FILE_NAME,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 }
