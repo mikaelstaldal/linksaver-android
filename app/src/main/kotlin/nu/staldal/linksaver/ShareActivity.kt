@@ -17,9 +17,13 @@ class ShareActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
-            intent.getStringExtra(Intent.EXTRA_TEXT)?.let { sharedText ->
-                saveUrl(sharedText)
-            } ?: finish()
+            val url = intent.getStringExtra(Intent.EXTRA_TEXT)?.let { UrlValidator.sanitize(it) }
+            if (url != null) {
+                saveUrl(url)
+            } else {
+                Toast.makeText(this, R.string.invalid_url, Toast.LENGTH_SHORT).show()
+                finish()
+            }
         } else {
             finish()
         }
