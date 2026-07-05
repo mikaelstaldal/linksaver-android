@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -29,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -63,6 +65,7 @@ fun ListScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    var itemPendingDeletion by remember { mutableStateOf<Item?>(null) }
 
     fun refreshLinks() {
         scope.launch {
@@ -131,18 +134,38 @@ fun ListScreen(
                         NoteItem(
                             item = item,
                             onEdit = { onEditItem(item.ID) },
-                            onDelete = { onDeleteItem(item) },
+                            onDelete = { itemPendingDeletion = item },
                         )
                     } else {
                         LinkItem(
                             item = item,
                             onClick = { onOpenLink(item.URL) },
                             onEdit = { onEditItem(item.ID) },
-                            onDelete = { onDeleteItem(item) },
+                            onDelete = { itemPendingDeletion = item },
                         )
                     }
                 }
             }
+        }
+
+        itemPendingDeletion?.let { item ->
+            AlertDialog(
+                onDismissRequest = { itemPendingDeletion = null },
+                title = { Text(stringResource(R.string.delete_confirmation_title)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onDeleteItem(item)
+                        itemPendingDeletion = null
+                    }) {
+                        Text(stringResource(R.string.delete))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { itemPendingDeletion = null }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
         }
     }
 }
