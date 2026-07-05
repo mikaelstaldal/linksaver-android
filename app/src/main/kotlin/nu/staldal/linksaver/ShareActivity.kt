@@ -32,12 +32,21 @@ class ShareActivity : Activity() {
     private fun saveUrl(url: String) {
         val repository = ItemRepository(this)
         scope.launch {
-            withContext(Dispatchers.IO) {
-                repository.addLink(url)
+            try {
+                withContext(Dispatchers.IO) {
+                    repository.addLink(url)
+                }
+                Toast.makeText(this@ShareActivity, R.string.link_saved, Toast.LENGTH_SHORT).show()
+                ItemRepository.enqueueSyncWork(this@ShareActivity)
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@ShareActivity,
+                    getString(R.string.error_saving_link, e.message ?: e.javaClass.simpleName),
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                finish()
             }
-            Toast.makeText(this@ShareActivity, R.string.link_saved, Toast.LENGTH_SHORT).show()
-            ItemRepository.enqueueSyncWork(this@ShareActivity)
-            finish()
         }
     }
 }
