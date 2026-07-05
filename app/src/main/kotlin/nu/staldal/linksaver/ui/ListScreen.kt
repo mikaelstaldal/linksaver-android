@@ -168,10 +168,8 @@ fun ListScreen(
                     contentAlignment = androidx.compose.ui.Alignment.Center,
                 ) {
                     Text(
-                        text = stringResource(
-                            if (searchTerm.isBlank()) R.string.no_items_yet
-                            else R.string.no_search_results
-                        ),
+                        text = if (searchTerm.isBlank()) stringResource(R.string.no_items_yet)
+                        else stringResource(R.string.no_search_results, searchTerm),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

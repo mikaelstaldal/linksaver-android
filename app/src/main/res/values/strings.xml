@@ -34,5 +34,5 @@
     <string name="error_saving_settings">Error saving settings: %s</string>
     <string name="pending_sync">%d change(s) not yet synced</string>
     <string name="no_items_yet">No items yet — tap + to add your first link.</string>
-    <string name="no_search_results">No items match your search.</string>
+    <string name="no_search_results">No results for “%1$s”.</string>
 </resources>
