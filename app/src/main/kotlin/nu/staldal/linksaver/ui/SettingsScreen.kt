@@ -13,6 +13,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -44,6 +46,9 @@ fun SettingsScreen(
 ) {
     val settings by repository.settingsFlow.collectAsState(initial = AppSettings("", "", ""))
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val savedMessage = stringResource(R.string.settings_saved)
+    val errorMessageTemplate = stringResource(R.string.error_saving_settings)
 
     var baseUrl by remember(settings) { mutableStateOf(settings.baseUrl) }
     var username by remember(settings) { mutableStateOf(settings.username) }
@@ -59,7 +64,8 @@ fun SettingsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -98,8 +104,15 @@ fun SettingsScreen(
             Button(
                 onClick = {
                     scope.launch {
-                        repository.saveSettings(AppSettings(baseUrl, username, password))
-                        onBack()
+                        try {
+                            repository.saveSettings(AppSettings(baseUrl, username, password))
+                            snackbarHostState.showSnackbar(savedMessage)
+                            onBack()
+                        } catch (e: Exception) {
+                            snackbarHostState.showSnackbar(
+                                errorMessageTemplate.format(e.message ?: e.javaClass.simpleName)
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.align(androidx.compose.ui.Alignment.End)

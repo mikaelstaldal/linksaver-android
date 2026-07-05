@@ -29,5 +29,7 @@
     <string name="link_already_exists">Link already exists</string>
     <string name="invalid_url">Not a valid link</string>
     <string name="settings_not_configured">Settings not configured</string>
+    <string name="settings_saved">Settings saved</string>
+    <string name="error_saving_settings">Error saving settings: %s</string>
     <string name="pending_sync">%d change(s) not yet synced</string>
 </resources>
