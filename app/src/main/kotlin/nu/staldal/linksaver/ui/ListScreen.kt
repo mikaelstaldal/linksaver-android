@@ -3,9 +3,11 @@ package nu.staldal.linksaver.ui
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -158,21 +160,39 @@ fun ListScreen(
                     .fillMaxWidth()
                     .padding(8.dp)
             )
-            LazyColumn {
-                items(items) { item ->
-                    if (item.isNote()) {
-                        NoteItem(
-                            item = item,
-                            onEdit = { onEditItem(item.ID) },
-                            onDelete = { itemPendingDeletion = item },
-                        )
-                    } else {
-                        LinkItem(
-                            item = item,
-                            onClick = { onOpenLink(item.URL) },
-                            onEdit = { onEditItem(item.ID) },
-                            onDelete = { itemPendingDeletion = item },
-                        )
+            if (items.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (searchTerm.isBlank()) R.string.no_items_yet
+                            else R.string.no_search_results
+                        ),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                LazyColumn {
+                    items(items) { item ->
+                        if (item.isNote()) {
+                            NoteItem(
+                                item = item,
+                                onEdit = { onEditItem(item.ID) },
+                                onDelete = { itemPendingDeletion = item },
+                            )
+                        } else {
+                            LinkItem(
+                                item = item,
+                                onClick = { onOpenLink(item.URL) },
+                                onEdit = { onEditItem(item.ID) },
+                                onDelete = { itemPendingDeletion = item },
+                            )
+                        }
                     }
                 }
             }
