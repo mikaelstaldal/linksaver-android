@@ -165,7 +165,7 @@ fun ListScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(32.dp),
-                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                    contentAlignment = androidx.compose.ui.Alignment.TopCenter,
                 ) {
                     Text(
                         text = if (searchTerm.isBlank()) stringResource(R.string.no_items_yet)
