@@ -5,13 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,6 +44,7 @@ fun AddLinkScreen(
     val clipboardManager = LocalClipboardManager.current
 
     var url by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
     val sanitizedUrl = UrlValidator.sanitize(url)
 
     Scaffold(
@@ -57,14 +61,26 @@ fun AddLinkScreen(
                         onClick = {
                             sanitizedUrl?.let { link ->
                                 scope.launch {
-                                    repository.addLink(link)
-                                    onBack()
+                                    isLoading = true
+                                    try {
+                                        repository.addLink(link)
+                                        onBack()
+                                    } finally {
+                                        isLoading = false
+                                    }
                                 }
                             }
                         },
-                        enabled = sanitizedUrl != null
+                        enabled = !isLoading && sanitizedUrl != null
                     ) {
-                        Text(stringResource(R.string.save))
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(stringResource(R.string.save))
+                        }
                     }
                 }
             )
