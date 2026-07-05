@@ -54,6 +54,8 @@ fun SettingsScreen(
     var username by remember(settings) { mutableStateOf(settings.username) }
     var password by remember(settings) { mutableStateOf(settings.password) }
 
+    val baseUrlValid = baseUrl.startsWith("https://") || baseUrl.startsWith("http://")
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -78,6 +80,14 @@ fun SettingsScreen(
                 value = baseUrl,
                 onValueChange = { baseUrl = it },
                 label = { Text(stringResource(R.string.base_url)) },
+                isError = baseUrl.isNotEmpty() && !baseUrlValid,
+                supportingText = {
+                    if (baseUrl.isNotEmpty() && !baseUrlValid) {
+                        Text(stringResource(R.string.invalid_base_url))
+                    }
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
@@ -115,6 +125,7 @@ fun SettingsScreen(
                         }
                     }
                 },
+                enabled = baseUrlValid,
                 modifier = Modifier.align(androidx.compose.ui.Alignment.End)
             ) {
                 Text(stringResource(R.string.save))
