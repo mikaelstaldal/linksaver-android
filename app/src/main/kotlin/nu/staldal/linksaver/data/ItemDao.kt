@@ -38,6 +38,9 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE syncStatus != 'SYNCED'")
     suspend fun getPendingChanges(): List<ItemEntity>
 
+    @Query("SELECT COUNT(*) FROM items WHERE syncStatus != 'SYNCED'")
+    fun getPendingCount(): Flow<Int>
+
     @Transaction
     suspend fun replaceAllSynced(items: List<ItemEntity>) {
         deleteAllSynced()

@@ -148,6 +148,8 @@ class ItemRepository(private val context: Context) {
 
     suspend fun getItemById(id: String): Item? = dao.getItemById(id)?.toItem()
 
+    val pendingSyncCount: Flow<Int> = dao.getPendingCount()
+
     suspend fun addLink(url: String) {
         val tempId = "temp-${UUID.randomUUID()}"
         val entity = ItemEntity(
