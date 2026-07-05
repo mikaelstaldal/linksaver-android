@@ -28,7 +28,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -74,6 +73,35 @@ fun EditScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                try {
+                                    repository.updateItem(itemId, title, description)
+                                    onBack()
+                                } catch (e: Exception) {
+                                    Log.w("EditScreen", "Error saving item: ${e.message}", e)
+                                    snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
+                                } finally {
+                                    isLoading = false
+                                }
+                            }
+                        },
+                        modifier = Modifier.padding(end = 8.dp),
+                        enabled = !isLoading && url.isNotBlank()
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(stringResource(R.string.save))
+                        }
+                    }
                 }
             )
         }
@@ -104,34 +132,6 @@ fun EditScreen(
                 label = { Text(stringResource(R.string.description)) },
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        isLoading = true
-                        try {
-                            repository.updateItem(itemId, title, description)
-                            onBack()
-                        } catch (e: Exception) {
-                            Log.w("EditScreen", "Error saving item: ${e.message}", e)
-                            snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
-                        } finally {
-                            isLoading = false
-                        }
-                    }
-                },
-                modifier = Modifier.align(Alignment.End),
-                enabled = !isLoading && url.isNotBlank()
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(stringResource(R.string.save))
-                }
-            }
         }
     }
 }
