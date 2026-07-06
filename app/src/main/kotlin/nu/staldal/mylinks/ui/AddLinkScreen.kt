@@ -1,6 +1,5 @@
-package nu.staldal.linksaver.ui
+package nu.staldal.mylinks.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,58 +17,40 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import nu.staldal.linksaver.R
-import nu.staldal.linksaver.data.ItemRepository
+import nu.staldal.mylinks.R
+import nu.staldal.mylinks.UrlValidator
+import nu.staldal.mylinks.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditScreen(
+fun AddLinkScreen(
     repository: ItemRepository,
-    itemId: String,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
 
     var url by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
-
-    LaunchedEffect(itemId) {
-        val item = repository.getItemById(itemId)
-        if (item != null) {
-            url = item.URL
-            title = item.Title
-            description = item.Description
-        } else {
-            snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_item, "Item not found"))
-            onBack()
-        }
-    }
+    val sanitizedUrl = UrlValidator.sanitize(url)
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.edit_item)) },
+                title = { Text(stringResource(R.string.add_link)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -77,21 +59,19 @@ fun EditScreen(
                 actions = {
                     Button(
                         onClick = {
-                            scope.launch {
-                                isLoading = true
-                                try {
-                                    repository.updateItem(itemId, title, description)
-                                    onBack()
-                                } catch (e: Exception) {
-                                    Log.w("EditScreen", "Error saving item: ${e.message}", e)
-                                    snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
-                                } finally {
-                                    isLoading = false
+                            sanitizedUrl?.let { link ->
+                                scope.launch {
+                                    isLoading = true
+                                    try {
+                                        repository.addLink(link)
+                                        onBack()
+                                    } finally {
+                                        isLoading = false
+                                    }
                                 }
                             }
                         },
-                        modifier = Modifier.padding(end = 8.dp),
-                        enabled = !isLoading && url.isNotBlank()
+                        enabled = !isLoading && sanitizedUrl != null
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -118,19 +98,20 @@ fun EditScreen(
                 onValueChange = { url = it },
                 label = { Text(stringResource(R.string.url)) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = false,
-            )
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text(stringResource(R.string.title)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text(stringResource(R.string.description)) },
-                modifier = Modifier.fillMaxWidth()
+                enabled = true,
+                isError = url.isNotBlank() && sanitizedUrl == null,
+                supportingText = {
+                    if (url.isNotBlank() && sanitizedUrl == null) {
+                        Text(stringResource(R.string.invalid_url))
+                    }
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        clipboardManager.getText()?.let { url = it.text }
+                    }) {
+                        Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
+                    }
+                }
             )
         }
     }

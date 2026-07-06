@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.data
+package nu.staldal.mylinks.data
 
 import android.content.Context
 import androidx.room.Database
@@ -18,7 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "linksaver.db"
+                    "mylinks.db"
                 ).build().also { instance = it }
             }
     }

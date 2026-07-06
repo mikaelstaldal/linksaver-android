@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.data
+package nu.staldal.mylinks.data
 
 import retrofit2.http.DELETE
 import retrofit2.http.Field

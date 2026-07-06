@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.data
+package nu.staldal.mylinks.data
 
 import android.content.Context
 import android.content.SharedPreferences

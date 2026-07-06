@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.data
+package nu.staldal.mylinks.data
 
 data class Item(
     val ID: String,

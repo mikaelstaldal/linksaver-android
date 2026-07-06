@@ -1,5 +1,5 @@
 ### Project Overview
-LinkSaver is an Android application built with Kotlin and Jetpack Compose. It uses Retrofit for API communication and DataStore for persistent settings.
+Mylinks is an Android application built with Kotlin and Jetpack Compose. It uses Retrofit for API communication and DataStore for persistent settings.
 
 ### Build/Configuration Instructions
 - **SDK Versions**: 
@@ -38,10 +38,10 @@ LinkSaver is an Android application built with Kotlin and Jetpack Compose. It us
 - **Architecture**:
   - `LinkRepository` handles data operations, API client creation, and settings management using DataStore.
   - `LinkApi` defines the Retrofit interface for the backend service.
-  - UI screens are implemented as Composable functions in the `nu.staldal.linksaver.ui` package.
+  - UI screens are implemented as Composable functions in the `nu.staldal.mylinks.ui` package.
 - **API Communication**: The app uses Basic Authentication, configured via an interceptor in `LinkRepository.getApi()`.
 - **Debugging**: Networking logs are available via a network interceptor in `LinkRepository` with the tag `LinkRepository`.
 
 ### Build and Run
 - **Building**: Build the app via `gradle assembleDebug`
-- **Running**: Run the app via `gradle installDebug` and then launch it from Android Studio or via `adb shell am start -n <package_name>/nu.staldal.linksaver.MainActivity`
+- **Running**: Run the app via `gradle installDebug` and then launch it from Android Studio or via `adb shell am start -n <package_name>/nu.staldal.mylinks.MainActivity`

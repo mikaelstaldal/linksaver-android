@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "nu.staldal.linksaver"
+    namespace = "nu.staldal.mylinks"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "nu.staldal.linksaver"
+        applicationId = "nu.staldal.mylinks"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

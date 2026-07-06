@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.data
+package nu.staldal.mylinks.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "linksaver-android"
+rootProject.name = "mylinks-android"
 include(":app")

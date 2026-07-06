@@ -1,11 +1,11 @@
-# Link Saver Android
+# MyLinks Android
 
-A native Android client for [Link Saver](https://github.com/mikaelstaldal/linksaver), built with Kotlin and Jetpack Compose.
+A native Android client for [MyLinks](https://github.com/mikaelstaldal/mylinks), built with Kotlin and Jetpack Compose.
 
 ## Overview
 
-Link Saver Android allows you to manage your saved links on the go (although it's not written in Go). 
-It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, and delete links.
+MyLinks Android allows you to manage your saved links on the go (although it's not written in Go). 
+It connects to a MyLinks API (which *is* written in Go) to fetch, add, edit, and delete links.
 
 ## Features
 
@@ -27,8 +27,8 @@ It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, 
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/mikaelstaldal/linksaver-android.git
-    cd linksaver-android
+    git clone https://github.com/mikaelstaldal/mylinks-android.git
+    cd mylinks-android
     ```
 
 2.  **Open in Android Studio:**
@@ -36,7 +36,7 @@ It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, 
 
 3.  **Configure API Settings:**
     Once the app is running, go to the Settings screen and provide:
-    - **Base URL:** The URL of your LinkSaver instance (e.g., `https://links.example.com/`).
+    - **Base URL:** The URL of your Mylinks instance (e.g., `https://links.example.com/`).
     - **Username:** Your username.
     - **Password:** Your password.
 
@@ -59,7 +59,7 @@ It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, 
 .
 ├── app/                        # Main application module
 │   ├── src/main/kotlin/        # Kotlin source code
-│   │   └── nu/staldal/linksaver/
+│   │   └── nu/staldal/mylinks/
 │   │       ├── data/           # Data layer (API, Repository, Models)
 │   │       ├── ui/             # UI layer (Compose screens, Theme)
 │   │       └── MainActivity.kt # Main entry point
@@ -75,7 +75,7 @@ It connects to a Link Saver API (which *is* written in Go) to fetch, add, edit, 
 ## Configuration
 
 The application uses Android DataStore to persist user settings locally on the device.
-- `base_url`: The endpoint for the LinkSaver API.
+- `base_url`: The endpoint for the Mylinks API.
 - `username`: Credentials for Basic Auth.
 - `password`: Credentials for Basic Auth.
 

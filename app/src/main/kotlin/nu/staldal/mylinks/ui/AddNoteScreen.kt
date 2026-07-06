@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.ui
+package nu.staldal.mylinks.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,27 +30,26 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import nu.staldal.linksaver.R
-import nu.staldal.linksaver.UrlValidator
-import nu.staldal.linksaver.data.ItemRepository
+import nu.staldal.mylinks.R
+import nu.staldal.mylinks.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddLinkScreen(
+fun AddNoteScreen(
     repository: ItemRepository,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val clipboardManager = LocalClipboardManager.current
 
-    var url by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
-    val sanitizedUrl = UrlValidator.sanitize(url)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.add_link)) },
+                title = { Text(stringResource(R.string.add_note)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -59,19 +58,17 @@ fun AddLinkScreen(
                 actions = {
                     Button(
                         onClick = {
-                            sanitizedUrl?.let { link ->
-                                scope.launch {
-                                    isLoading = true
-                                    try {
-                                        repository.addLink(link)
-                                        onBack()
-                                    } finally {
-                                        isLoading = false
-                                    }
+                            scope.launch {
+                                isLoading = true
+                                try {
+                                    repository.addNote(title, description)
+                                    onBack()
+                                } finally {
+                                    isLoading = false
                                 }
                             }
                         },
-                        enabled = !isLoading && sanitizedUrl != null
+                        enabled = !isLoading && title.isNotBlank() && description.isNotBlank()
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -94,20 +91,29 @@ fun AddLinkScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = url,
-                onValueChange = { url = it },
-                label = { Text(stringResource(R.string.url)) },
+                value = title,
+                onValueChange = { title = it },
+                label = { Text(stringResource(R.string.title)) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
-                isError = url.isNotBlank() && sanitizedUrl == null,
-                supportingText = {
-                    if (url.isNotBlank() && sanitizedUrl == null) {
-                        Text(stringResource(R.string.invalid_url))
-                    }
-                },
                 trailingIcon = {
                     IconButton(onClick = {
-                        clipboardManager.getText()?.let { url = it.text }
+                        clipboardManager.getText()?.let { title = it.text }
+                    }) {
+                        Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
+                    }
+                }
+            )
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text(stringResource(R.string.description)) },
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                enabled = true,
+                minLines = 5,
+                trailingIcon = {
+                    IconButton(onClick = {
+                        clipboardManager.getText()?.let { description = it.text }
                     }) {
                         Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
                     }

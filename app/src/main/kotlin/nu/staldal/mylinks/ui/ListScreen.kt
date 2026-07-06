@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.ui
+package nu.staldal.mylinks.ui
 
 import android.util.Log
 import androidx.compose.foundation.clickable
@@ -49,9 +49,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import nu.staldal.linksaver.R
-import nu.staldal.linksaver.data.Item
-import nu.staldal.linksaver.data.ItemRepository
+import nu.staldal.mylinks.R
+import nu.staldal.mylinks.data.Item
+import nu.staldal.mylinks.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

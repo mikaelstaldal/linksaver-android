@@ -1,4 +1,4 @@
-package nu.staldal.linksaver
+package nu.staldal.mylinks
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

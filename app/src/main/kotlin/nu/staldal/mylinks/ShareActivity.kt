@@ -1,4 +1,4 @@
-package nu.staldal.linksaver
+package nu.staldal.mylinks
 
 import android.app.Activity
 import android.content.Intent
@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import nu.staldal.linksaver.data.ItemRepository
+import nu.staldal.mylinks.data.ItemRepository
 
 class ShareActivity : Activity() {
     private val scope = MainScope()

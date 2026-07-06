@@ -1,4 +1,4 @@
-package nu.staldal.linksaver.data
+package nu.staldal.mylinks.data
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

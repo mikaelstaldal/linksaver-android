@@ -1,5 +1,6 @@
-package nu.staldal.linksaver.ui
+package nu.staldal.mylinks.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,39 +17,58 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import nu.staldal.linksaver.R
-import nu.staldal.linksaver.data.ItemRepository
+import nu.staldal.mylinks.R
+import nu.staldal.mylinks.data.ItemRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNoteScreen(
+fun EditScreen(
     repository: ItemRepository,
+    itemId: String,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val clipboardManager = LocalClipboardManager.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
+    var url by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
+    LaunchedEffect(itemId) {
+        val item = repository.getItemById(itemId)
+        if (item != null) {
+            url = item.URL
+            title = item.Title
+            description = item.Description
+        } else {
+            snackbarHostState.showSnackbar(context.getString(R.string.error_fetching_item, "Item not found"))
+            onBack()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.add_note)) },
+                title = { Text(stringResource(R.string.edit_item)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -61,14 +80,18 @@ fun AddNoteScreen(
                             scope.launch {
                                 isLoading = true
                                 try {
-                                    repository.addNote(title, description)
+                                    repository.updateItem(itemId, title, description)
                                     onBack()
+                                } catch (e: Exception) {
+                                    Log.w("EditScreen", "Error saving item: ${e.message}", e)
+                                    snackbarHostState.showSnackbar(context.getString(R.string.error_saving_link, e.message))
                                 } finally {
                                     isLoading = false
                                 }
                             }
                         },
-                        enabled = !isLoading && title.isNotBlank() && description.isNotBlank()
+                        modifier = Modifier.padding(end = 8.dp),
+                        enabled = !isLoading && url.isNotBlank()
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -91,33 +114,23 @@ fun AddNoteScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
+                value = url,
+                onValueChange = { url = it },
+                label = { Text(stringResource(R.string.url)) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = false,
+            )
+            OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text(stringResource(R.string.title)) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true,
-                trailingIcon = {
-                    IconButton(onClick = {
-                        clipboardManager.getText()?.let { title = it.text }
-                    }) {
-                        Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
-                    }
-                }
+                modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text(stringResource(R.string.description)) },
-                modifier = Modifier.fillMaxWidth().weight(1f),
-                enabled = true,
-                minLines = 5,
-                trailingIcon = {
-                    IconButton(onClick = {
-                        clipboardManager.getText()?.let { description = it.text }
-                    }) {
-                        Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
-                    }
-                }
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

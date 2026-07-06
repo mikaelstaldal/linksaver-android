@@ -1,4 +1,4 @@
-package nu.staldal.linksaver
+package nu.staldal.mylinks
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,13 +10,13 @@ import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import nu.staldal.linksaver.data.ItemRepository
-import nu.staldal.linksaver.ui.AddLinkScreen
-import nu.staldal.linksaver.ui.AddNoteScreen
-import nu.staldal.linksaver.ui.EditScreen
-import nu.staldal.linksaver.ui.ListScreen
-import nu.staldal.linksaver.ui.SettingsScreen
-import nu.staldal.linksaver.ui.theme.LinksaverTheme
+import nu.staldal.mylinks.data.ItemRepository
+import nu.staldal.mylinks.ui.AddLinkScreen
+import nu.staldal.mylinks.ui.AddNoteScreen
+import nu.staldal.mylinks.ui.EditScreen
+import nu.staldal.mylinks.ui.ListScreen
+import nu.staldal.mylinks.ui.SettingsScreen
+import nu.staldal.mylinks.ui.theme.MylinksTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         ItemRepository.enqueueSyncWork(this)
 
         setContent {
-            LinksaverTheme {
+            MylinksTheme {
                 val navController = rememberNavController()
                 val context = LocalContext.current
                 val repository = remember { ItemRepository(context) }

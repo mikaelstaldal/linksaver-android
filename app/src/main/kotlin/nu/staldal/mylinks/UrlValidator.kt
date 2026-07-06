@@ -1,4 +1,4 @@
-package nu.staldal.linksaver
+package nu.staldal.mylinks
 
 import java.net.URI
 import java.net.URISyntaxException
