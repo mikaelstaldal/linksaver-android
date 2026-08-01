@@ -19,6 +19,8 @@
     <string name="refresh">Refresh</string>
     <string name="cancel">Cancel</string>
     <string name="paste">Paste</string>
+    <string name="copy_link">Copy link</string>
+    <string name="copy_note">Copy note</string>
     <string name="link_saved">Link saved</string>
     <string name="error_saving_link">Error saving link: %s</string>
     <string name="error_saving_note">Error saving note: %s</string>

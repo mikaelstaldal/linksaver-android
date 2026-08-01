@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
@@ -45,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -71,6 +73,7 @@ fun ListScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val clipboard = LocalClipboard.current
     var itemPendingDeletion by remember { mutableStateOf<Item?>(null) }
 
     fun refreshLinks() {
@@ -180,6 +183,9 @@ fun ListScreen(
                         if (item.isNote()) {
                             NoteItem(
                                 item = item,
+                                onCopy = {
+                                    scope.launch { clipboard.setPlainText(item.Title, item.Description) }
+                                },
                                 onEdit = { onEditItem(item.ID) },
                                 onDelete = { itemPendingDeletion = item },
                             )
@@ -187,6 +193,9 @@ fun ListScreen(
                             LinkItem(
                                 item = item,
                                 onClick = { onOpenLink(item.URL) },
+                                onCopy = {
+                                    scope.launch { clipboard.setPlainText(item.Title, item.URL) }
+                                },
                                 onEdit = { onEditItem(item.ID) },
                                 onDelete = { itemPendingDeletion = item },
                             )
@@ -222,6 +231,7 @@ fun ListScreen(
 fun LinkItem(
     item: Item,
     onClick: () -> Unit,
+    onCopy: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -248,6 +258,9 @@ fun LinkItem(
                 }
             }
             Row {
+                IconButton(onClick = onCopy) {
+                    Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy_link))
+                }
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
                 }
@@ -262,6 +275,7 @@ fun LinkItem(
 @Composable
 fun NoteItem(
     item: Item,
+    onCopy: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -286,6 +300,9 @@ fun NoteItem(
                 }
             }
             Row {
+                IconButton(onClick = onCopy) {
+                    Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy_note))
+                }
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
                 }

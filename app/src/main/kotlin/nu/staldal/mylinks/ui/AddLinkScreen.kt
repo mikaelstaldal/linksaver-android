@@ -26,7 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -41,7 +42,8 @@ fun AddLinkScreen(
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val context = LocalContext.current
 
     var url by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
@@ -107,7 +109,9 @@ fun AddLinkScreen(
                 },
                 trailingIcon = {
                     IconButton(onClick = {
-                        clipboardManager.getText()?.let { url = it.text }
+                        scope.launch {
+                            clipboard.getPlainText(context)?.let { url = it }
+                        }
                     }) {
                         Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
                     }

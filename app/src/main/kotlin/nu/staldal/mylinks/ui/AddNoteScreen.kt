@@ -26,7 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -40,7 +41,8 @@ fun AddNoteScreen(
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val context = LocalContext.current
 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -98,7 +100,9 @@ fun AddNoteScreen(
                 enabled = true,
                 trailingIcon = {
                     IconButton(onClick = {
-                        clipboardManager.getText()?.let { title = it.text }
+                        scope.launch {
+                            clipboard.getPlainText(context)?.let { title = it }
+                        }
                     }) {
                         Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
                     }
@@ -113,7 +117,9 @@ fun AddNoteScreen(
                 minLines = 5,
                 trailingIcon = {
                     IconButton(onClick = {
-                        clipboardManager.getText()?.let { description = it.text }
+                        scope.launch {
+                            clipboard.getPlainText(context)?.let { description = it }
+                        }
                     }) {
                         Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.paste))
                     }
